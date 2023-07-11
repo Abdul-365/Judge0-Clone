@@ -5,10 +5,21 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 import cors from 'cors';
-import auth from './auth';
+import http from 'http';
+import { Server } from 'socket.io';
+import codeRunner from './controllers/codeRunner';
 require('dotenv').config();
 import userRoutes from './routes/userRoutes';
+import auth from './auth';
+
+// Initialize app
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+codeRunner(io);
+server.listen(process.env.PORT, () => {
+    console.log(`Server running on port ${process.env.PORT}`)
+});
 
 // Connect Database
 mongoose.set('strictQuery', true);
@@ -47,8 +58,5 @@ app.use(auth.setUser);
 // routes
 userRoutes(app);
 app.get('/', function (req, res) {
-    res.send('Welcome to our API')
-})
-app.listen(process.env.PORT, () =>
-    console.log(`Server running on port ${process.env.PORT}`)
-);
+    res.send('Judge0 Clone API')
+});
