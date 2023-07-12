@@ -1,10 +1,12 @@
 import { spawn } from 'child_process';
+import { body, validationResult } from 'express-validator';
 import fs from 'fs';
 import stream from 'stream';
 import Code from '../models/codeModel';
 
-export const executeCode = (req, res) => {
+// -------------------------------- Execute code in sandbox environment --------------------------------
 
+export const executeCode = (req, res) => {
     const { code, language, input } = req.body;
     let fileName;
 
@@ -15,7 +17,11 @@ export const executeCode = (req, res) => {
     }
 
     // write code to a temporary file
-    fs.writeFileSync(fileName, code);
+    try {
+        fs.writeFileSync(fileName, code);
+    } catch (err) {
+        return res.status(500).json({ error: 'Failed to write code to file' });
+    }
 
     // create a readable stream for user input
     const inputStream = new stream.Readable();
@@ -41,13 +47,39 @@ export const executeCode = (req, res) => {
         }
     });
 
+    run.on('error', (err) => {
+        res.status(500).json({ error: 'Failed to execute code' });
+    });
+
     run.on('close', (code) => {
         res.json({ output });
     });
 };
 
-export const saveCode = async (req, res) => {
+// -------------------------------- Manage Code Submissions --------------------------------
+
+export const validateCreateCode = [
+    body('title', 'Title must be specified.').trim().isLength({ min: 1 }).escape(),
+    body('language', 'Language must be specified').trim().isLength({ min: 1 }).escape(),
+    body('code', 'Editor must contain code').isLength({ min: 1 })
+]
+
+export const validateUpdateCode = [
+    body('title', 'Title must be specified.').optional().trim().isLength({ min: 1 }).escape(),
+    body('language', 'Language must be specified').optional().trim().isLength({ min: 1 }).escape(),
+    body('code', 'Editor must contain code').optional().isLength({ min: 1 })
+]
+
+export const checkCode = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+        return res.status(400).json({ errors: errors.array() });
+    next();
+}
+
+export const createCode = async (req, res) => {
     try {
+        req.body.user = req.user._id;
         let newCode = new Code(req.body);
         await newCode.save();
         res.status(200).send({ message: 'Code saved successfully' });
@@ -55,3 +87,25 @@ export const saveCode = async (req, res) => {
         res.status(500).send(err);
     }
 }
+
+export const readCode = async (req, res) => {
+    try {
+        const code = await Code.findById(req.params.codeId);
+        res.status(200).json(code);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
+export const updateCode = async (req, res) => {
+    try {
+        const user = await Code.findByIdAndUpdate(
+            req.params.codeId,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+};

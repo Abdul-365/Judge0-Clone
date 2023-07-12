@@ -1,5 +1,5 @@
-import passport from 'passport';
 import { body, validationResult } from 'express-validator';
+import passport from 'passport';
 import User from '../models/userModel';
 
 // -------------------------------- User Authentication --------------------------------
@@ -33,18 +33,18 @@ export const isAuth = (req, res, next) => {
 // -------------------------------- Manage Users --------------------------------
 
 export const validateCreateUser = [
-    body('name').trim().isLength({ min: 1 }).escape().withMessage('Name must be specified.'),
-    body('email').isEmail().withMessage('Email must be valid'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('name', 'Name must be specified.').trim().isLength({ min: 1 }).escape(),
+    body('email', 'Email must be valid').trim().isEmail().escape(),
+    body('password', 'Password must be at least 6 characters long').trim().isLength({ min: 6 }).escape()
 ]
 
 export const validateUpdateUser = [
-    body('name').optional().trim().isLength({ min: 1 }).escape().withMessage('Name must be specified.'),
-    body('email').optional().isEmail().withMessage('Email must be valid'),
-    body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    body('name', 'Name must be specified.').optional().trim().isLength({ min: 1 }).escape(),
+    body('email', 'Email must be valid').optional().trim().isEmail().escape(),
+    body('password', 'Password must be at least 6 characters long').optional().trim().isLength({ min: 6 }).escape()
 ]
 
-export const checkUser = async (req, res, next) => {
+export const checkUser = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty())
         return res.status(400).json({ errors: errors.array() });
