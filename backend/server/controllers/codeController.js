@@ -109,3 +109,12 @@ export const updateCode = async (req, res) => {
         res.status(500).send(err);
     }
 };
+
+export const deleteCode = async (req, res) => {
+    try {
+        await Code.findByIdAndRemove(req.params.codeId);
+        res.status(200).send({ message: 'Code deleted successfully' });
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}

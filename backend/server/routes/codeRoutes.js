@@ -1,6 +1,7 @@
 import {
     checkCode,
     createCode,
+    deleteCode,
     executeCode,
     readCode,
     updateCode,
@@ -17,7 +18,8 @@ const codeRoutes = (app) => {
         .post(isAuth, validateCreateCode, checkCode, createCode);
     app.route('/code/:codeId')
         .get(isAuth, readCode)
-        .put(isAuth, validateUpdateCode, checkCode, updateCode);
+        .put(isAuth, validateUpdateCode, checkCode, updateCode)
+        .delete(isAuth, deleteCode);
 }
 
 export default codeRoutes;
