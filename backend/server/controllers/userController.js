@@ -1,4 +1,5 @@
 import passport from 'passport';
+import { body, validationResult } from 'express-validator';
 import User from '../models/userModel';
 
 // -------------------------------- User Authentication --------------------------------
@@ -8,7 +9,7 @@ export const login = (req, res, next) => {
         if (err)
             return res.status(500).send(err);
         if (!user)
-            return res.status(401).send(info.message);
+            return res.status(401).send(info);
         req.logIn(user, function (err) {
             if (err)
                 return res.status(500).send(err);
@@ -30,6 +31,25 @@ export const isAuth = (req, res, next) => {
 };
 
 // -------------------------------- Manage Users --------------------------------
+
+export const validateCreateUser = [
+    body('name').trim().isLength({ min: 1 }).escape().withMessage('Name must be specified.'),
+    body('email').isEmail().withMessage('Email must be valid'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+]
+
+export const validateUpdateUser = [
+    body('name').optional().trim().isLength({ min: 1 }).escape().withMessage('Name must be specified.'),
+    body('email').optional().isEmail().withMessage('Email must be valid'),
+    body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+]
+
+export const checkUser = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+        return res.status(400).json({ errors: errors.array() });
+    next();
+}
 
 export const createUser = async (req, res) => {
     try {

@@ -1,24 +1,27 @@
 import {
+    checkUser,
     createUser,
     deleteUser,
     isAuth,
     login,
     logout,
     readUser,
-    updateUser
+    updateUser,
+    validateCreateUser,
+    validateUpdateUser,
 } from '../controllers/userController';
 
 const userRoutes = (app) => {
-    
+
     app.route('/user/signup')
-        .post(createUser);
+        .post(validateCreateUser, checkUser, createUser);
     app.route('/user/login')
         .post(login);
     app.route('/user/logout')
         .get(isAuth, logout);
     app.route('/user')
         .get(isAuth, readUser)
-        .put(isAuth, updateUser)
+        .put(isAuth, validateUpdateUser, checkUser, updateUser)
         .delete(isAuth, deleteUser);
 }
 
