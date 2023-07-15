@@ -1,9 +1,25 @@
 [
     {
         "id": 1,
+        "name": "C++",
+        "fileName": "code.cpp",
+        "dockerImage": "my-image",
+        "compileCommand": "g++ -o code code.cpp",
+        "runCommand": "./code"
+    },
+    {
+        "id": 2,
+        "name": "Java",
+        "fileName": "Main.java",
+        "dockerImage": "my-image",
+        "compileCommand": "javac Main.java",
+        "runCommand": "java Main"
+    },
+    {
+        "id": 3,
         "name": "Python",
         "fileName": "code.py",
         "dockerImage": "my-image",
-        "runCommand": "python code.py"
+        "runCommand": "python3 code.py"
     }
 ]
