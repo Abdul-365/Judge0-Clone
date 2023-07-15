@@ -1,0 +1,9 @@
+[
+    {
+        "id": 1,
+        "name": "Python",
+        "fileName": "code.py",
+        "dockerImage": "my-image",
+        "runCommand": "python code.py"
+    }
+]
