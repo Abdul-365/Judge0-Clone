@@ -25,7 +25,7 @@ export const executeCode = (req, res) => {
     // compile code if necessary
     let compile, compile_output = '';
     if (language.compileCommand) {
-        compile = spawn('docker', ['run', '-i', '--rm', '-v', `${process.cwd()}:/app`, '-w', '/app', language.dockerImage, 'sh', '-c', language.compileCommand]);
+        compile = spawn('docker', ['run', '-i', '--rm', '-v', `${process.cwd()}:/app`, '-w', '/app', 'code-executor', 'sh', '-c', language.compileCommand]);
         compile.stderr.on('data', (data) => {
             compile_output += data.toString();
         });
@@ -49,7 +49,7 @@ export const executeCode = (req, res) => {
         if (time_limit)
             runCommand = `timeout ${time_limit} ${runCommand}`;
         const timeOutputFile = path.join('./time-output.txt');
-        const run = spawn('docker', ['run', '-i', '--rm', '-v', `${process.cwd()}:/app`, '-w', '/app', language.dockerImage, 'sh', '-c', `time -v -o ${timeOutputFile} ${runCommand}`]);
+        const run = spawn('docker', ['run', '-i', '--rm', '-v', `${process.cwd()}:/app`, '-w', '/app', 'code-executor', 'sh', '-c', `time -v -o ${timeOutputFile} ${runCommand}`]);
 
         // pass user input to container
         inputStream.pipe(run.stdin);
