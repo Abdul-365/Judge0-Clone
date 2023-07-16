@@ -18,7 +18,7 @@ export const checkValidation = async (req, res, next) => {
 // -------------------------------- Execute code in sandbox environment --------------------------------
 
 export const validateExecuteCode =
-    body('language_id', 'Language ID must be specified').trim().isLength({ min: 1 }).escape();
+    body('language_id', 'Language ID must be specified').isLength({ min: 1 });
 
 export const executeCode = async (req, res) => {
 
@@ -130,7 +130,7 @@ export const executeCode = async (req, res) => {
                 status = 'Accepted';
             else
                 status = 'Wrong Answer';
-            res.json({ stdout, stderr, compile_output, time, memory, status });
+            res.status(200).json({ stdout, stderr, compile_output, time, memory, status });
         });
     }
 };
