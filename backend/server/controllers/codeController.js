@@ -131,6 +131,13 @@ export const executeCode = async (req, res) => {
             else
                 status = 'Wrong Answer';
             res.status(200).json({ stdout, stderr, compile_output, time, memory, status });
+
+            // cleanup step
+            try {
+                await execAsync(`docker exec my-container sh -c "rm /app/*"`);
+            } catch (error) {
+                console.error('Failed to delete files in container', error);
+            }            
         });
     }
 };
