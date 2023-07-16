@@ -28,14 +28,12 @@ export const executeCode = async (req, res) => {
     if (!language)
         return res.status(400).json({ message: 'Unsupported Language', status: 'Error' });
 
-    // write code to a temporary file
+    // create a new container
+    const containerName = `my-container-${Date.now()}`;
     try {
-        const { stdout } = await execAsync(`docker inspect -f '{{.State.Running}}' my-container`);
-        // start container if not running
-        if (stdout.trim() !== 'true')
-            await execAsync(`docker start my-container`);
+        await execAsync(`docker run --name ${containerName} -d code-executor`);
     } catch (error) {
-        return res.status(500).json({ message: 'Failed to start container', status: 'Error', error });
+        return res.status(500).json({ message: 'Failed to create container', status: 'Error', error });
     }
 
     let compile_output = '';
@@ -45,21 +43,24 @@ export const executeCode = async (req, res) => {
     sourceStream.push(null);
 
     // write source code to file in container
-    const write = spawn('docker', ['exec', '-i', 'my-container', 'sh', '-c', `cat - > /app/${language.fileName}`]);
+    const write = spawn('docker', ['exec', '-i', containerName, 'sh', '-c', `cat - > /app/${language.fileName}`]);
     sourceStream.pipe(write.stdin);
     write.on('error', (error) => {
-        return res.status(500).json({ message: 'Failed to write code to file', status: 'Error', error });
+        cleanup();
+        res.status(500).json({ message: 'Failed to write code to file', status: 'Error', error });
     });
     write.on('close', () => {
         // compile code if necessary
         if (language.compileCommand) {
-            const compile = spawn('docker', ['exec', '-i', 'my-container', 'sh', '-c', language.compileCommand]);
+            const compile = spawn('docker', ['exec', '-i', containerName, 'sh', '-c', language.compileCommand]);
             compile.stderr.on('data', (data) => {
                 compile_output += data.toString();
             });
             compile.on('close', (code) => {
-                if (code !== 0)
+                if (code !== 0) {
+                    cleanup();
                     return res.status(400).json({ status: 'Compilation Error', compile_output });
+                }
                 runCode();
             });
         } else {
@@ -67,7 +68,7 @@ export const executeCode = async (req, res) => {
         }
     });
 
-    function runCode() {
+    async function runCode() {
         // create a readable stream for user input
         const inputStream = new stream.Readable();
         inputStream.push(stdin);
@@ -78,7 +79,7 @@ export const executeCode = async (req, res) => {
         if (time_limit)
             runCommand = `timeout ${time_limit} ${runCommand}`;
         const timeOutputFile = '/tmp/time-output.txt';
-        const run = spawn('docker', ['exec', '-i', 'my-container', 'sh', '-c', `time -v -o ${timeOutputFile} ${runCommand}`]);
+        const run = spawn('docker', ['exec', '-i', containerName, 'sh', '-c', `time -v -o ${timeOutputFile} ${runCommand}`]);
 
         // pass user input to container
         inputStream.pipe(run.stdin);
@@ -102,12 +103,13 @@ export const executeCode = async (req, res) => {
         });
 
         run.on('error', (error) => {
+            cleanup();
             res.status(500).json({ message: 'Failed to execute code', status: 'Internal Error', error });
         });
 
         run.on('close', async (code) => {
             try {
-                const { stdout: timeStdout } = await execAsync(`docker exec my-container cat ${timeOutputFile}`);
+                const { stdout: timeStdout } = await execAsync(`docker exec ${containerName} cat ${timeOutputFile}`);
                 const timeOutput = timeStdout;
                 if (timeOutput) {
                     const timeMatch = timeOutput.match(/Elapsed \(wall clock\) time.*: (.*)/);
@@ -118,6 +120,7 @@ export const executeCode = async (req, res) => {
                         memory = memoryMatch[1];
                 }
             } catch (error) {
+                cleanup();
                 return res.status(500).json({ message: 'Failed to read time output file', status: 'Internal Error', error });
             }
             if (code === 124)
@@ -131,14 +134,19 @@ export const executeCode = async (req, res) => {
             else
                 status = 'Wrong Answer';
             res.status(200).json({ stdout, stderr, compile_output, time, memory, status });
-
-            // cleanup step
-            try {
-                await execAsync(`docker exec my-container sh -c "rm /app/*"`);
-            } catch (error) {
-                console.error('Failed to delete files in container', error);
-            }            
+            cleanup();
         });
+
+    }
+
+    // delete container after execution
+    async function cleanup() {
+        try {
+            await execAsync(`docker stop ${containerName}`);
+            await execAsync(`docker rm ${containerName}`);
+        } catch (error) {
+            console.error('Failed to delete container', error);
+        }
     }
 };
 
