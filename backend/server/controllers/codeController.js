@@ -15,10 +15,35 @@ export const checkValidation = async (req, res, next) => {
     next();
 }
 
-// -------------------------------- Execute code in sandbox environment --------------------------------
-
 export const validateExecuteCode =
     body('language_id', 'Language ID must be specified').isLength({ min: 1 });
+
+// -------------------------------- Execute code in sandbox environment --------------------------------
+
+const POOL_SIZE = 20;
+const containerPool = [];
+const containerAvailableCallbacks = [];
+
+export async function createContainerPool() {
+    // get the list of existing containers
+    const { stdout } = await execAsync('docker ps -a --filter "name=my-container" --format "{{.Names}}"');
+    const existingContainers = stdout.split('\n').filter(name => name);
+
+    // add existing containers to the pool
+    containerPool.push(...existingContainers);
+
+    // create new containers if necessary
+    const numContainersToCreate = POOL_SIZE - existingContainers.length;
+    for (let i = 0; i < numContainersToCreate; i++) {
+        const containerName = `my-container-${Date.now()}-${i}`;
+        try {
+            await execAsync(`docker run --name ${containerName} -d code-executor`);
+            containerPool.push(containerName);
+        } catch (error) {
+            console.error('Failed to create container', error);
+        }
+    }
+}
 
 export const executeCode = async (req, res) => {
 
@@ -28,12 +53,14 @@ export const executeCode = async (req, res) => {
     if (!language)
         return res.status(400).json({ message: 'Unsupported Language', status: 'Error' });
 
-    // create a new container
-    const containerName = `my-container-${Date.now()}`;
-    try {
-        await execAsync(`docker run --name ${containerName} -d code-executor`);
-    } catch (error) {
-        return res.status(500).json({ message: 'Failed to create container', status: 'Error', error });
+    // create a new container or wait for one to become available
+    let containerName;
+    if (containerPool.length > 0) {
+        containerName = containerPool.pop();
+    } else {
+        containerName = await new Promise(resolve => {
+            containerAvailableCallbacks.push(resolve);
+        });
     }
 
     let compile_output = '';
@@ -136,16 +163,21 @@ export const executeCode = async (req, res) => {
             res.status(200).json({ stdout, stderr, compile_output, time, memory, status });
             cleanup();
         });
-
     }
 
-    // delete container after execution
     async function cleanup() {
         try {
-            await execAsync(`docker stop ${containerName}`);
-            await execAsync(`docker rm ${containerName}`);
+            // delete any files that were created during the request
+            await execAsync(`docker exec ${containerName} sh -c "rm -rf /app/*"`);
+            // return the container to the pool or assign it to a waiting callback
+            const callback = containerAvailableCallbacks.shift();
+            if (callback) {
+                callback(containerName);
+            } else {
+                containerPool.push(containerName);
+            }
         } catch (error) {
-            console.error('Failed to delete container', error);
+            console.error('Failed to reset container', error);
         }
     }
 };

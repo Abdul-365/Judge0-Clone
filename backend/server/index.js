@@ -9,6 +9,7 @@ import auth from './auth';
 require('dotenv').config();
 import userRoutes from './routes/userRoutes';
 import codeRoutes from './routes/codeRoutes';
+import { createContainerPool } from './controllers/codeController';
 const app = express();
 
 // Connect Database
@@ -51,6 +52,18 @@ codeRoutes(app);
 app.get('/', function (req, res) {
     res.send('Judge0 Clone API')
 });
-app.listen(process.env.PORT, () =>
-    console.log(`Server running on port ${process.env.PORT}`)
-);
+
+// create the container pool and start the server
+async function startServer() {
+    try {
+        await createContainerPool();
+        app.listen(process.env.PORT, () =>
+            console.log(`Server running on port ${process.env.PORT}`)
+        );
+    } catch (error) {
+        console.error('Failed to start server', error);
+        // handle the error, e.g. by logging the error or exiting the application
+    }
+}
+
+startServer();
