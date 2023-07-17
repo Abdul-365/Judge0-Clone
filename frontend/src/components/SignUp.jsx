@@ -62,16 +62,16 @@ export default function SignUp({ setTrigger, openSnackbar }) {
     async function createUser(e) {
         e.preventDefault();
 
-        axios.post(`${process.env.REACT_APP_BACKEND_URL}/signup`, signUpInfo, { withCredentials: true })
+        axios.post(`${process.env.REACT_APP_BACKEND_URL}/user/signup`, signUpInfo, { withCredentials: true })
             .then((response) => {
                 if (response) {
                     openSnackbar('Account created successfully', 'success');
                     loginUser();
                 }
             })
-            .catch((error) => {
+            .catch(({ response }) => {
                 openSnackbar('Account could not be created', 'error');
-                console.log(error);
+                console.log(response);
             });
     }
 
@@ -86,7 +86,7 @@ export default function SignUp({ setTrigger, openSnackbar }) {
                         <TextFieldx
                             value={signUpInfo.name}
                             onChange={handleChange}
-                            name='firstName'
+                            name='name'
                             label="Enter your Name"
                         />
                         <Typography variant='subtitle2' gutterBottom>Email</Typography>
