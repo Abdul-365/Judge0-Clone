@@ -31,7 +31,7 @@ function TextFieldx({ children, ...other }) {
     );
 }
 
-export default function SignUp({ setTrigger, openSnackbar }) {
+export default function SignIn({ setTrigger, openSnackbar }) {
 
     const navigate = useNavigate();
 

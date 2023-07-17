@@ -17,7 +17,7 @@ const links = [
     { name: 'Sign In', to: '/signin', auth: false },
 ]
 
-export default function Navbar({ user, setTrigger, openSnackbar, handleReset }) {
+export default function NavDrawer({ user, setTrigger, openSnackbar, handleReset }) {
 
     const [state, setState] = useState(false);
 

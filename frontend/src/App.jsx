@@ -2,11 +2,11 @@ import MuiAlert from '@mui/material/Alert';
 import Container from '@mui/material/Container';
 import Snackbar from '@mui/material/Snackbar';
 import axios from 'axios';
-import { useState, useEffect, forwardRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Outlet, Route, Routes } from 'react-router-dom';
 import CodeEditor from './components/CodeEditor';
+import NavDrawer from './components/NavDrawer';
 import SignIn from './components/SignIn';
-import Navbar from './components/Navbar';
 import SignUp from './components/SignUp';
 import Submissions from './components/Submissions';
 
@@ -93,7 +93,7 @@ export default function App() {
             <Routes>
                 <Route path='/' element={
                     <>
-                        <Navbar
+                        <NavDrawer
                             user={user}
                             openSnackbar={openSnackbar}
                             setTrigger={setTrigger}
@@ -126,7 +126,7 @@ export default function App() {
                     />} />
                 </Route>
                 <Route path='/signup' element={
-                    <SignUp setTrigger={setTrigger} openSnackbar={openSnackbar}/>}
+                    <SignUp setTrigger={setTrigger} openSnackbar={openSnackbar} />}
                 />
             </Routes>
             <Snackbar
