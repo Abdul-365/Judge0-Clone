@@ -68,6 +68,24 @@ export default function App() {
         status: ''
     });
 
+    function handleReset() {
+        setCodeValues({
+            id: '',
+            name: '',
+            source_code: '',
+            language_id: 1,
+            stdin: '',
+        });
+        setResult({
+            stdout: '',
+            stderr: '',
+            compile_output: '',
+            time: '',
+            memory: '',
+            status: '',
+        });
+    }
+
     // ----------------------------------------------------------------
 
     return (
@@ -75,12 +93,13 @@ export default function App() {
             <Routes>
                 <Route path='/' element={
                     <>
-                        <Navbar 
-                            user={user} 
-                            openSnackbar={openSnackbar} 
+                        <Navbar
+                            user={user}
+                            openSnackbar={openSnackbar}
                             setTrigger={setTrigger}
                             setCodeValues={setCodeValues}
                             setResult={setResult}
+                            handleReset={handleReset}
                         />
                         <Container maxWidth="xl" sx={{ mt: 6, mb: 2 }}>
                             <Outlet />
@@ -94,8 +113,12 @@ export default function App() {
                         setCodeValues={setCodeValues}
                         result={result}
                         setResult={setResult}
+                        handleReset={handleReset}
                     />} />
-                    <Route path='signin' element={<SignIn setTrigger={setTrigger} openSnackbar={openSnackbar} />} />
+                    <Route path='signin' element={<SignIn
+                        setTrigger={setTrigger}
+                        openSnackbar={openSnackbar}
+                    />} />
                     <Route path='submissions' element={<Submissions
                         setCodeValues={setCodeValues}
                         setResult={setResult}
@@ -103,7 +126,7 @@ export default function App() {
                     />} />
                 </Route>
                 <Route path='/signup' element={
-                    <SignUp setTrigger={setTrigger} openSnackbar={openSnackbar} />}
+                    <SignUp setTrigger={setTrigger} openSnackbar={openSnackbar}/>}
                 />
             </Routes>
             <Snackbar

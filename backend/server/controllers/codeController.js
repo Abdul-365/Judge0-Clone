@@ -155,6 +155,10 @@ export const executeCode = async (req, res) => {
 export const validateCreateCode = [
     body('name', 'Name must be specified.').trim().isLength({ min: 1 }).escape(),
     body('language_id', 'Language ID must be specified').trim().isLength({ min: 1 }).escape(),
+    body('user', 'User ID must be specified').trim().isLength({ min: 1 }),
+    body('time').trim().escape(),
+    body('memory').trim().escape(),
+    body('status').trim().escape(),
 ]
 export const createCode = async (req, res) => {
     try {
@@ -188,6 +192,10 @@ export const readAllCodes = async (req, res) => {
 export const validateUpdateCode = [
     body('name', 'Name must be specified.').optional().trim().isLength({ min: 1 }).escape(),
     body('language_id', 'Language ID must be specified').optional().trim().isLength({ min: 1 }).escape(),
+    body('user', 'User ID must be specified').optional().isLength({ min: 1 }),
+    body('time').optional().trim().escape(),
+    body('memory').optional().trim().escape(),
+    body('status').optional().trim().escape(),
 ]
 export const updateCode = async (req, res) => {
     try {

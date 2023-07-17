@@ -52,7 +52,7 @@ function a11yProps(index) {
 
 // -------------------------------- Code Editor --------------------------------
 
-export default function CodeEditor({ user, openSnackbar, codeValues, setCodeValues, result, setResult }) {
+export default function CodeEditor({ user, openSnackbar, codeValues, setCodeValues, result, setResult, handleReset }) {
 
     // -------------------------------- Controlled inputs --------------------------------
 
@@ -123,24 +123,6 @@ export default function CodeEditor({ user, openSnackbar, codeValues, setCodeValu
                 openSnackbar(`Could not ${codeValues.id ? 'update' : 'save'} code`, 'error');
                 console.log(response);
             });
-    }
-
-    function handleReset () {
-        setCodeValues({
-            id: '',
-            name: '',
-            source_code: '',
-            language_id: 1,
-            stdin: '',
-        });
-        setResult({
-            stdout: '',
-            stderr: '',
-            compile_output: '',
-            time: '',
-            memory: '',
-            status: '',
-        });
     }
 
     // ----------------------------------------------------------------

@@ -17,7 +17,7 @@ const links = [
     { name: 'Sign In', to: '/signin', auth: false },
 ]
 
-export default function Navbar({ user, setTrigger, openSnackbar, setCodeValues, setResult }) {
+export default function Navbar({ user, setTrigger, openSnackbar, handleReset }) {
 
     const [state, setState] = useState(false);
 
@@ -33,6 +33,7 @@ export default function Navbar({ user, setTrigger, openSnackbar, setCodeValues, 
         axios.get(`${process.env.REACT_APP_BACKEND_URL}/user/signout`, { withCredentials: true })
             .then(() => {
                 setTrigger(prevValue => !prevValue)
+                handleReset();
                 navigate('/');
             })
             .catch((error) => {
