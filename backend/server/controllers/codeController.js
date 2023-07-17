@@ -3,7 +3,7 @@ import { body, validationResult } from 'express-validator';
 import stream from 'stream';
 import { promisify } from 'util';
 import Code from '../models/codeModel';
-import languages from './languages.json';
+import languages from '../../languages.json';
 const execAsync = promisify(exec);
 
 // -------------------------------- Check Validation --------------------------------
