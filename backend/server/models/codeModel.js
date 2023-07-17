@@ -6,7 +6,7 @@ const codeSchema = new Schema({
 
     name: { type: String, required: true },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    source_code: { type: String, required: true },
+    source_code: { type: String },
     language_id: { type: Number, required: true },
     stdin: { type: String },
 

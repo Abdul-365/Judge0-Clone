@@ -161,7 +161,7 @@ export const createCode = async (req, res) => {
         req.body.user = req.user._id;
         let newCode = new Code(req.body);
         await newCode.save();
-        res.status(200).send({ message: 'Code saved successfully' });
+        res.status(200).send(newCode);
     } catch (err) {
         res.status(500).send(err);
     }
@@ -176,18 +176,27 @@ export const readCode = async (req, res) => {
     }
 }
 
+export const readAllCodes = async (req, res) => {
+    try {
+        const code = await Code.find({ user: req.user._id });
+        res.status(200).json(code);
+    } catch (err) {
+        res.status(500).send(err);
+    }
+}
+
 export const validateUpdateCode = [
     body('name', 'Name must be specified.').optional().trim().isLength({ min: 1 }).escape(),
     body('language_id', 'Language ID must be specified').optional().trim().isLength({ min: 1 }).escape(),
 ]
 export const updateCode = async (req, res) => {
     try {
-        await Code.findByIdAndUpdate(
+        const code = await Code.findByIdAndUpdate(
             req.params.codeId,
             req.body,
             { new: true, runValidators: true }
         );
-        res.status(200).json({ message: 'Code updated successfully' });
+        res.status(200).json(code);
     } catch (err) {
         res.status(500).send(err);
     }

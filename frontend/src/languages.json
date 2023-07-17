@@ -1,0 +1,22 @@
+[
+    {
+        "id": 1,
+        "name": "C++",
+        "fileName": "code.cpp",
+        "compileCommand": "g++ -o /app/code /app/code.cpp",
+        "runCommand": "/app/code"
+    },
+    {
+        "id": 2,
+        "name": "Java",
+        "fileName": "Main.java",
+        "compileCommand": "javac /app/Main.java",
+        "runCommand": "java Main"
+    },
+    {
+        "id": 3,
+        "name": "Python",
+        "fileName": "code.py",
+        "runCommand": "python3 /app/code.py"
+    }
+]

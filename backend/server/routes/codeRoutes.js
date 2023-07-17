@@ -3,6 +3,7 @@ import {
     createCode,
     deleteCode,
     executeCode,
+    readAllCodes,
     readCode,
     updateCode,
     validateCreateCode,
@@ -21,6 +22,9 @@ const codeRoutes = (app) => {
         .get(isAuth, readCode)
         .put(isAuth, validateUpdateCode, checkValidation, updateCode)
         .delete(isAuth, deleteCode);
+    app.route('/codes')
+        .get(isAuth, readAllCodes);
+    
 }
 
 export default codeRoutes;

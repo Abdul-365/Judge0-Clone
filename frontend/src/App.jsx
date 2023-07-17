@@ -49,6 +49,25 @@ export default function App() {
         setSnackbar({ ...snackbar, open: false });
     };
 
+    // -------------------------------- Code Editor ------------------------------
+
+    const [codeValues, setCodeValues] = useState({
+        id: '',
+        name: '',
+        source_code: '',
+        language_id: 1,
+        stdin: '',
+    });
+
+    const [result, setResult] = useState({
+        stdout: '',
+        stderr: '',
+        compile_output: '',
+        time: '',
+        memory: '',
+        status: ''
+    });
+
     // ----------------------------------------------------------------
 
     return (
@@ -56,15 +75,32 @@ export default function App() {
             <Routes>
                 <Route path='/' element={
                     <>
-                        <Navbar user={user} openSnackbar={openSnackbar} setTrigger={setTrigger} />
+                        <Navbar 
+                            user={user} 
+                            openSnackbar={openSnackbar} 
+                            setTrigger={setTrigger}
+                            setCodeValues={setCodeValues}
+                            setResult={setResult}
+                        />
                         <Container maxWidth="xl" sx={{ mt: 6, mb: 2 }}>
                             <Outlet />
                         </Container>
                     </>
                 }>
-                    <Route path='' element={<CodeEditor user={user} />} />
+                    <Route path='' element={<CodeEditor
+                        user={user}
+                        openSnackbar={openSnackbar}
+                        codeValues={codeValues}
+                        setCodeValues={setCodeValues}
+                        result={result}
+                        setResult={setResult}
+                    />} />
                     <Route path='signin' element={<SignIn setTrigger={setTrigger} openSnackbar={openSnackbar} />} />
-                    <Route path='submissions' element={<Submissions />} />
+                    <Route path='submissions' element={<Submissions
+                        setCodeValues={setCodeValues}
+                        setResult={setResult}
+                        openSnackbar={openSnackbar}
+                    />} />
                 </Route>
                 <Route path='/signup' element={
                     <SignUp setTrigger={setTrigger} openSnackbar={openSnackbar} />}

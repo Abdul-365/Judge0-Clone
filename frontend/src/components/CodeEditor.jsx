@@ -10,10 +10,11 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import axios from 'axios';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React from 'react';
 import OutputWindow from './OutputWindow';
 
 // -------------------------------- Custom Tab Panel --------------------------------
@@ -51,15 +52,9 @@ function a11yProps(index) {
 
 // -------------------------------- Code Editor --------------------------------
 
-export default function CodeEditor() {
+export default function CodeEditor({ user, openSnackbar, codeValues, setCodeValues, result, setResult }) {
 
     // -------------------------------- Controlled inputs --------------------------------
-
-    const [codeValues, setCodeValues] = useState({
-        source_code: '',
-        language_id: 1,
-        stdin: '',
-    });
 
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -72,17 +67,6 @@ export default function CodeEditor() {
         setCodeValues({ ...codeValues, stdin: newValue });
     };
 
-    // -------------------------------- Result --------------------------------
-
-    const [result, setResult] = useState({
-        stdout: '',
-        stderr: '',
-        compile_output: '',
-        time: '',
-        memory: '',
-        status: ''
-    });
-
     // -------------------------------- Tabs --------------------------------
 
     const [tabValue, setTabValue] = React.useState(0);
@@ -91,7 +75,7 @@ export default function CodeEditor() {
         setTabValue(newValue);
     };
 
-    // -------------------------------- Execute on server --------------------------------
+    // -------------------------------- Handle requests --------------------------------
 
     function handleRunClick() {
         const newResult = {
@@ -112,6 +96,53 @@ export default function CodeEditor() {
             });
     };
 
+    function handleSaveClick() {
+        const newCode = {
+            name: codeValues.name,
+            user: user,
+            source_code: codeValues.source_code,
+            language_id: codeValues.language_id,
+            stdin: codeValues.stdin,
+            stdout: result.stdout,
+            stderr: result.stderr,
+            compile_output: result.compile_output,
+            time: result.time,
+            memory: result.memory,
+            status: result.status,
+        }
+        const method = codeValues.id ? 'put' : 'post';
+        const url = `${process.env.REACT_APP_BACKEND_URL}/code${codeValues.id ? `/${codeValues.id}` : ''}`;
+
+        axios[method](url, newCode, { withCredentials: true })
+            .then(({ data }) => {
+                openSnackbar(`Code ${codeValues.id ? 'updated' : 'saved'} successfully`, 'success');
+                const { _id } = data;
+                setCodeValues({ ...codeValues, id: _id });
+            })
+            .catch(({ response }) => {
+                openSnackbar(`Could not ${codeValues.id ? 'update' : 'save'} code`, 'error');
+                console.log(response);
+            });
+    }
+
+    function handleReset () {
+        setCodeValues({
+            id: '',
+            name: '',
+            source_code: '',
+            language_id: 1,
+            stdin: '',
+        });
+        setResult({
+            stdout: '',
+            stderr: '',
+            compile_output: '',
+            time: '',
+            memory: '',
+            status: '',
+        });
+    }
+
     // ----------------------------------------------------------------
 
     return (
@@ -123,6 +154,18 @@ export default function CodeEditor() {
                     <MenuItem value={3}>Python</MenuItem>
                 </Select>
                 <Button onClick={handleRunClick}>Run</Button>
+                {user &&
+                    <>
+                        <TextField
+                            label="Name"
+                            name='name'
+                            value={codeValues.name}
+                            onChange={handleChange}
+                            variant="outlined"
+                        />
+                        <Button onClick={handleSaveClick}>Save</Button>
+                    </>}
+                <Button onClick={handleReset}>Reset</Button>
             </Grid>
             <Grid item xs={6}>
                 <Box display='flex'>
@@ -159,8 +202,8 @@ export default function CodeEditor() {
                 </Box>
             </Grid>
             <Grid item xs={6}>
-                <OutputWindow 
-                    output={result.stdout + '\n' + result.stderr + '\n' + result.compile_output} 
+                <OutputWindow
+                    output={result.stdout + '\n' + result.stderr + '\n' + result.compile_output}
                     status={result.status}
                 />
             </Grid>

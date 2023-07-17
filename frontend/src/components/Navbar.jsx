@@ -12,12 +12,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const links = [
-    { name: 'CodeEditor', to: '/' },
+    { name: 'Code Editor', to: '/' },
     { name: 'Submissions', to: '/submissions', auth: true },
-    { name: 'SignIn', to: '/signin', auth: false },
+    { name: 'Sign In', to: '/signin', auth: false },
 ]
 
-export default function Navbar({ user, setTrigger, openSnackbar }) {
+export default function Navbar({ user, setTrigger, openSnackbar, setCodeValues, setResult }) {
 
     const [state, setState] = useState(false);
 
@@ -59,7 +59,7 @@ export default function Navbar({ user, setTrigger, openSnackbar }) {
                 >
                     <List>
                         {links.map((link) => {
-                            if (!user && link.auth === true || user && link.auth === false)
+                            if ((!user && link.auth === true) || (user && link.auth === false))
                                 return null;
                             return (
                                 <ListItem key={link.name} disablePadding>
