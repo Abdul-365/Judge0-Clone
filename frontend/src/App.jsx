@@ -22,7 +22,7 @@ export default function App() {
     const [updateTrigger, setTrigger] = useState(false);
 
     useEffect(() => {
-        axios.get(`http://localhost:4000/user`, { withCredentials: true })
+        axios.get(`${process.env.REACT_APP_BACKEND_URL}/user`, { withCredentials: true })
             .then((response) => {
                 if (response) setUser(response.data)
                 else setUser(null);
