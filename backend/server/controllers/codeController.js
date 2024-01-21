@@ -1,9 +1,11 @@
 import { exec, spawn } from 'child_process';
+import dotenv from 'dotenv';
 import { body, validationResult } from 'express-validator';
 import stream from 'stream';
 import { promisify } from 'util';
-import Code from '../models/codeModel';
 import languages from '../../languages.json';
+import Code from '../models/codeModel';
+dotenv.config();
 const execAsync = promisify(exec);
 
 // -------------------------------- Check Validation --------------------------------
@@ -20,7 +22,7 @@ export const validateExecuteCode =
 
 // -------------------------------- Execute code in sandbox environment --------------------------------
 
-const POOL_SIZE = 20;
+const POOL_SIZE = process.env.POOL_SIZE;
 const containerPool = [];
 const containerAvailableCallbacks = [];
 
@@ -28,6 +30,15 @@ export async function createContainerPool() {
     // get the list of existing containers
     const { stdout } = await execAsync('docker ps -a --filter "name=my-container" --format "{{.Names}}"');
     const existingContainers = stdout.split('\n').filter(name => name);
+
+    // start existing containers if they are not running
+    for (const container of existingContainers) {
+        const { stdout: inspectStdout } = await execAsync(`docker inspect --format='{{.State.Running}}' ${container}`);
+        const isRunning = inspectStdout.trim() === 'true';
+
+        if (!isRunning)
+            await execAsync(`docker start ${container}`);
+    }
 
     // add existing containers to the pool
     containerPool.push(...existingContainers);

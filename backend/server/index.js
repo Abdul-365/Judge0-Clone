@@ -1,15 +1,16 @@
-import express from 'express';
 import bodyparser from 'body-parser';
-import mongoose from "mongoose";
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import session from 'express-session';
+import mongoose from "mongoose";
 import auth from './auth';
-require('dotenv').config();
-import userRoutes from './routes/userRoutes';
-import codeRoutes from './routes/codeRoutes';
 import { createContainerPool } from './controllers/codeController';
+import codeRoutes from './routes/codeRoutes';
+import userRoutes from './routes/userRoutes';
+dotenv.config();
 const app = express();
 
 // Connect Database
